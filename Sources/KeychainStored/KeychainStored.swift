@@ -204,9 +204,9 @@ extension KeychainStored where ValueEncoder == JSONEncoder, ValueDecoder == JSON
     /// - parameter logger: When set, errors are logged using this closure.
     /// - parameter encoder: The encoder to use to encode values. Note that the encoder is not if the value is a String – they are stored directly as UTF-8 instead.
     /// - parameter decoder: The decoder to use to decode values. Note that the decoder is not if the value is a String – they are stored directly as UTF-8 instead.
-    public init(service: String, logger: Logger? = { print($0) }, jsonEncoder encoder: ValueEncoder = .init(), jsonDecoder decoder: ValueDecoder = .init()) {
+    public init(service: String, group: String? = nil, logger: Logger? = { print($0) }, jsonEncoder encoder: ValueEncoder = .init(), jsonDecoder decoder: ValueDecoder = .init()) {
         /// note: The argument labels are `jsonEncoder` / `jsonDecoder` instead of just `encoder` / `decoder` because otherwise this init would call itself.
-        self.init(service: service, logger: logger, encoder: encoder, decoder: decoder)
+        self.init(service: service, group: group, logger: logger, encoder: encoder, decoder: decoder)
     }
 }
 
