@@ -64,7 +64,7 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
         var query = [
             kSecClass as String: securityClass,
             kSecAttrService as String: service,
-            kSecAttrSynchronizableAny as String: true
+            kSecAttrSynchronizable: synchronizable
         ] as [String : Any]
         
         if let group = group {
