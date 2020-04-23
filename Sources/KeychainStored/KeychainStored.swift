@@ -16,6 +16,9 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     /// The value for `kSecAttrService`.
     public let service: String
     
+    /// The value for `kSecAttrAccessGroup `.
+    public let group: String?
+    
     /// The value that is stored in the keychain.
     public var wrappedValue: Value? {
         didSet {
@@ -39,11 +42,12 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     /// - parameter logger: When set, errors are logged using this closure.
     /// - parameter encoder: The encoder to use to encode values. Note that the encoder is not used if the value is a String – they are stored directly as UTF-8 instead.
     /// - parameter decoder: The decoder to use to decode values. Note that the decoder is not used if the value is a String – they are stored directly as UTF-8 instead.
-    public init(service: String, logger: Logger? = { print($0) }, encoder: ValueEncoder, decoder: ValueDecoder) {
+    public init(service: String, group: String? = nil, logger: Logger? = { print($0) }, encoder: ValueEncoder, decoder: ValueDecoder) {
         self.service = service
         self.logger = logger
         self.encoder = encoder
         self.decoder = decoder
+        self.group = group
         
         self.wrappedValue = loadValueFromKeychain()
     }
@@ -53,10 +57,16 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     // MARK: Query
     
     private var searchQuery: [String: Any] {
-        [
+        var query = [
             kSecClass as String: securityClass,
             kSecAttrService as String: service
-        ]
+        ] as [String : Any]
+        
+        if let group = group {
+            query[kSecAttrAccessGroup as String] = group
+        }
+        
+        return query
     }
     
     // MARK: Loading the value from the keychain
@@ -110,7 +120,7 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
             return
         }
         
-        let attributes: [String: Any] = [
+        var attributes: [String: Any] = [
             kSecValueData as String: encoded
         ]
         
