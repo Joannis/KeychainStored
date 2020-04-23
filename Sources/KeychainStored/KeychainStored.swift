@@ -19,6 +19,9 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     /// The value for `kSecAttrAccessGroup `.
     public let group: String?
     
+    /// The value for
+    public let synchronizable: Bool
+    
     /// The value that is stored in the keychain.
     public var wrappedValue: Value? {
         didSet {
@@ -42,12 +45,13 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     /// - parameter logger: When set, errors are logged using this closure.
     /// - parameter encoder: The encoder to use to encode values. Note that the encoder is not used if the value is a String – they are stored directly as UTF-8 instead.
     /// - parameter decoder: The decoder to use to decode values. Note that the decoder is not used if the value is a String – they are stored directly as UTF-8 instead.
-    public init(service: String, group: String? = nil, logger: Logger? = { print($0) }, encoder: ValueEncoder, decoder: ValueDecoder) {
+    public init(service: String, group: String? = nil, synchronizable: Bool = false, logger: Logger? = { print($0) }, encoder: ValueEncoder, decoder: ValueDecoder) {
         self.service = service
         self.logger = logger
         self.encoder = encoder
         self.decoder = decoder
         self.group = group
+        self.synchronizable = synchronizable
         
         self.wrappedValue = loadValueFromKeychain()
     }
@@ -59,7 +63,8 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
     private var searchQuery: [String: Any] {
         var query = [
             kSecClass as String: securityClass,
-            kSecAttrService as String: service
+            kSecAttrService as String: service,
+            kSecAttrSynchronizableAny as String: true
         ] as [String : Any]
         
         if let group = group {
@@ -123,6 +128,10 @@ public struct KeychainStored<Value: Codable, ValueEncoder: TopLevelEncoder, Valu
         var attributes: [String: Any] = [
             kSecValueData as String: encoded
         ]
+        
+        if synchronizable {
+            attributes[kSecAttrSynchronizable as String] = true
+        }
         
         var status = SecItemUpdate(
             searchQuery as CFDictionary,
@@ -204,9 +213,9 @@ extension KeychainStored where ValueEncoder == JSONEncoder, ValueDecoder == JSON
     /// - parameter logger: When set, errors are logged using this closure.
     /// - parameter encoder: The encoder to use to encode values. Note that the encoder is not if the value is a String – they are stored directly as UTF-8 instead.
     /// - parameter decoder: The decoder to use to decode values. Note that the decoder is not if the value is a String – they are stored directly as UTF-8 instead.
-    public init(service: String, group: String? = nil, logger: Logger? = { print($0) }, jsonEncoder encoder: ValueEncoder = .init(), jsonDecoder decoder: ValueDecoder = .init()) {
+    public init(service: String, group: String? = nil, synchronizable: Bool = false, logger: Logger? = { print($0) }, jsonEncoder encoder: ValueEncoder = .init(), jsonDecoder decoder: ValueDecoder = .init()) {
         /// note: The argument labels are `jsonEncoder` / `jsonDecoder` instead of just `encoder` / `decoder` because otherwise this init would call itself.
-        self.init(service: service, group: group, logger: logger, encoder: encoder, decoder: decoder)
+        self.init(service: service, group: group, synchronizable: synchronizable, logger: logger, encoder: encoder, decoder: decoder)
     }
 }
 

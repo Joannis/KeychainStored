@@ -7,9 +7,8 @@ fileprivate struct TestStruct: Codable, Equatable {
 }
 
 final class KeychainStoredTests: XCTestCase {
-    
-    @KeychainStored(service: "testString") private var wrappedString: String
-    @KeychainStored(service: "testStruct") private var wrappedStruct: TestStruct
+    @KeychainStored(service: "testString") private var wrappedString: String?
+    @KeychainStored(service: "testStruct") private var wrappedStruct: TestStruct?
 
     override func setUp() {
         wrappedString = nil
